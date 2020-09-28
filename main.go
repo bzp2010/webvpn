@@ -1,87 +1,29 @@
+//go:generate statik -src=./static -f
 package main
 
 import (
-	"bytes"
+	"github.com/bzp2010/webvpn/core"
+	"github.com/bzp2010/webvpn/utils"
 	"github.com/go-chi/chi"
-	"io"
-	"io/ioutil"
+	"github.com/go-chi/chi/middleware"
+	"go.uber.org/zap"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
-	"strconv"
-	"strings"
 )
 
 func main() {
+	// init logger
+	utils.InitLogger()
+
+	//
 	r := chi.NewRouter()
-	//r.Use(middleware.Logger)
-	r.Get("/{service}/*", ServeHTTP)
-	r.Post("/{service}/*", ServeHTTP)
-	r.Options("/{service}/*", ServeHTTP)
-	http.ListenAndServe(":8085", r)
-}
-
-func ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.RequestURI == "/favicon.ico" {
-		io.WriteString(w, "Request path Error")
-		return
-	}
-
-	service := chi.URLParam(r, "service")
-	pathWithQuery := strings.Replace(r.RequestURI, "/"+service, "",1)
-
-	rawURL := ""
-	switch service {
-	case "test1":
-		rawURL = "http://10.10.10.10" + pathWithQuery
-		break
-	case "test2":
-		rawURL = "http://10.10.10.10" + pathWithQuery
-		break
-	case "debug":
-		rawURL = "http://10.10.10.10" + pathWithQuery
-		break
-	case "baidu":
-		rawURL = "http://www.baidu.com" + pathWithQuery
-		break
-	}
-
-	remote, err := url.Parse(rawURL)
+	r.Use(middleware.Logger)
+	r.Get("/sw.js", core.ServiceWorkerHandler)
+	r.Get("/{service}/*", core.RequestHandler)
+	r.Post("/{service}/*", core.RequestHandler)
+	r.Head("/{service}/*", core.RequestHandler)
+	r.Options("/{service}/*", core.RequestHandler)
+	err := http.ListenAndServe(":18085", r)
 	if err != nil {
-		panic(err)
+		utils.Logger.Error("WebVPN Server Starting Failed", zap.Error(err))
 	}
-
-	proxy := httputil.NewSingleHostReverseProxy(remote)
-	proxy.Director = func(req *http.Request) {
-		// set the request host header
-		req.Host = remote.Host
-		req.URL.Scheme = remote.Scheme
-		req.URL.Host = remote.Host
-		req.URL.Path = remote.Path
-		req.URL.RawQuery = remote.RawQuery
-
-		// close gzip
-		req.Header.Set("Accept-Encoding", "")
-	}
-	proxy.ModifyResponse = func(response *http.Response) error {
-		body, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return  err
-		}
-
-		err = response.Body.Close()
-		if err != nil {
-			return err
-		}
-
-		response.Body = ioutil.NopCloser(bytes.NewReader(body))
-		response.ContentLength = int64(len(body))
-		response.Header.Set("Content-Length", strconv.Itoa(len(body)))
-
-		return nil
-	}
-
-	r.URL.Path = ""
-
-	proxy.ServeHTTP(w, r)
 }
