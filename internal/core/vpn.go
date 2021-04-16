@@ -3,24 +3,23 @@ package core
 import (
 	"github.com/bzp2010/webvpn/model"
 	"github.com/bzp2010/webvpn/processor"
-	"github.com/bzp2010/webvpn/utils"
-	"github.com/go-chi/chi"
+	"github.com/gogf/gf/frame/g"
+	"github.com/gogf/gf/net/ghttp"
 	"go.uber.org/zap"
-	"io"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
 )
 
-func RequestHandler(w http.ResponseWriter, r *http.Request) {
+func RequestHandler(r *ghttp.Request) {
 	if r.RequestURI == "/favicon.ico" {
-		io.WriteString(w, "Request path Error")
+		r.Response.Write("Request path Error")
 		return
 	}
 
 	// get service name from path
-	serviceName := chi.URLParam(r, "service")
+	serviceName := r.GetString("service")
 
 	// split real path and query
 	pathWithQuery := strings.Replace(r.RequestURI, "/"+serviceName, "", 1)
@@ -35,7 +34,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-	utils.Logger.Info(r.Host, zap.String("test", r.RequestURI))
+	g.Log().Info(r.Host, zap.String("test", r.RequestURI))
 
 	handler := &processor.RedirectProcessor{Service: service, Host: r.Host}
 	handler.SetNext(new(processor.StaticResourceProcessor))
@@ -71,5 +70,5 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	r.URL.Path = ""
 
-	proxy.ServeHTTP(w, r)
+	proxy.ServeHTTP(r.Response.ResponseWriter, r.Request)
 }
