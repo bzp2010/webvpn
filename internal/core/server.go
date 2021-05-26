@@ -16,7 +16,6 @@ func initRouter()  {
 	s := g.Server()
 
 	s.Group("/", func(group *ghttp.RouterGroup) {
-		group.GET("/sw.js", ServiceWorkerHandler)
 		group.ALL("/:service/*", RequestHandler)
 	})
 }
