@@ -5,9 +5,7 @@ type Service struct {
 	Url  string
 }
 
-/**
-Get Service Information
-*/
+// GetServiceByName get service information
 func GetServiceByName(serviceName string) *Service {
 	rawURL := ""
 	switch serviceName {
