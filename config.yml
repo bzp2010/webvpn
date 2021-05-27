@@ -1,1 +1,7 @@
-test: "tESt"
+serve:
+  admin:
+    host: 0.0.0.0
+    port: 9119
+  public:
+    host: 0.0.0.0
+    port: 8118
