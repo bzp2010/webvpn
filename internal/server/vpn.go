@@ -1,18 +1,25 @@
-package core
+package server
 
 import (
-	"github.com/bzp2010/webvpn/model"
-	"github.com/bzp2010/webvpn/processor"
-	"github.com/gogf/gf/frame/g"
-	"github.com/gogf/gf/net/ghttp"
-	"go.uber.org/zap"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strings"
+
+	"github.com/gogf/gf/frame/g"
+	"github.com/gogf/gf/net/ghttp"
+	"go.uber.org/zap"
+
+	"github.com/bzp2010/webvpn/model"
+	"github.com/bzp2010/webvpn/processor"
 )
 
-func RequestHandler(r *ghttp.Request) {
+func Handler(response http.ResponseWriter, request *http.Request) {
+	domain := request.Host
+	_, _ = response.Write([]byte(domain))
+}
+
+func RequestHandlerG(r *ghttp.Request) {
 	if r.RequestURI == "/favicon.ico" {
 		r.Response.Write("Request path Error")
 		return

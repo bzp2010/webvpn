@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"github.com/bzp2010/webvpn/internal/core"
+	"os"
+
 	"github.com/gogf/gf/frame/g"
 	"github.com/spf13/cobra"
-	"os"
+	"github.com/spf13/viper"
 )
 
 var configFile string
@@ -12,9 +13,6 @@ var rootCmd = &cobra.Command{
 	Use:   "webvpn",
 	Short: "WebVPN is a zero-trust gateway for proxy application",
 	Long:  `A flexible and configurable zero-trust gateway, it provides pluggable authentication and authorization for applications.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		core.NewServer()
-	},
 }
 
 func Execute() {
@@ -30,5 +28,14 @@ func init() {
 }
 
 func initConfig() {
-	g.Config().SetFileName(configFile)
+	// set config file path
+	viper.SetConfigFile(configFile)
+
+	// reading environments
+	viper.AutomaticEnv()
+
+	// reading config file
+	if err := viper.ReadInConfig(); err != nil {
+		g.Log().Error(err)
+	}
 }
