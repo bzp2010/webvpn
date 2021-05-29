@@ -5,3 +5,5 @@ serve:
   public:
     host: 0.0.0.0
     port: 8118
+
+dsn: mysql://root:123456@tcp(127.0.0.1:3306)/webvpn
