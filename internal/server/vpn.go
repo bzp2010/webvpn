@@ -11,7 +11,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/bzp2010/webvpn/model"
-	"github.com/bzp2010/webvpn/processor"
 )
 
 func Handler(response http.ResponseWriter, request *http.Request) {
@@ -43,9 +42,9 @@ func RequestHandlerG(r *ghttp.Request) {
 
 	g.Log().Info(r.Host, zap.String("test", r.RequestURI))
 
-	handler := &processor.RedirectProcessor{Service: service, Host: r.Host}
-	handler.SetNext(new(processor.StaticResourceProcessor))
-	handler.SetNext(&processor.HTMLProcessor{RequestURI: r.RequestURI, Service: service})
+	//handler := &processor.RedirectProcessor{Service: service, Host: r.Host}
+	//handler.SetNext(new(processor.StaticResourceProcessor))
+	//handler.SetNext(&processor.HTMLProcessor{RequestURI: r.RequestURI, Service: service})
 
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 
@@ -61,12 +60,12 @@ func RequestHandlerG(r *ghttp.Request) {
 		// close gzip
 		req.Header.Set("Accept-Encoding", "")
 
-		req = handler.RequestProcess(req)
+		//req = handler.RequestProcess(req)
 	}
 
 	// modify reverse proxy response
 	proxy.ModifyResponse = func(rep *http.Response) error {
-		rep = handler.ResponseProcess(rep)
+		//rep = handler.ResponseProcess(rep)
 		//err = rep.Body.Close()
 		//if err != nil {
 		//	return err

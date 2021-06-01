@@ -7,10 +7,6 @@ import (
 	"github.com/bzp2010/webvpn/internal/server"
 )
 
-func init() {
-	rootCmd.AddCommand(serveCmd)
-}
-
 // root command of run server
 var serveCmd = &cobra.Command{
 	Use:   "serve",
@@ -23,13 +19,7 @@ func init() {
 		Use: "public",
 		Short: "Run public server of WebVPN",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := server.NewServer(&server.Options{
-				Public: true,
-				Admin:  false,
-			})
-			if err != nil {
-				g.Log().Error(err)
-			}
+			startServer(true, false)
 		},
 	})
 
@@ -38,13 +28,7 @@ func init() {
 		Use: "admin",
 		Short: "Run admin server of WebVPN",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := server.NewServer(&server.Options{
-				Public: false,
-				Admin:  true,
-			})
-			if err != nil {
-				g.Log().Error(err)
-			}
+			startServer(false, true)
 		},
 	})
 
@@ -53,13 +37,27 @@ func init() {
 		Use: "all",
 		Short: "Run all server of WebVPN",
 		Run: func(cmd *cobra.Command, args []string) {
-			err := server.NewServer(&server.Options{
-				Public: true,
-				Admin:  true,
-			})
-			if err != nil {
-				g.Log().Error(err)
-			}
+			startServer(true, true)
 		},
 	})
+
+	rootCmd.AddCommand(serveCmd)
+}
+
+func startServer(isStartPublic, isStartAdmin bool)  {
+	s, err := server.NewServer(&server.Options{
+		Public: isStartPublic,
+		Admin:  isStartAdmin,
+	})
+
+	if err != nil {
+		g.Log().Errorf("webvpn server create failed: %s", err.Error())
+		return
+	}
+
+	err = s.Start()
+	if err != nil {
+		g.Log().Errorf("webvpn server start failed: %s", err.Error())
+		return
+	}
 }

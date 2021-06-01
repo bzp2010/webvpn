@@ -1,12 +1,27 @@
 package model
 
 type Service struct {
+	ID          uint
+	Name        string
+	From        string
+	To          string
+	HostRewrite string
+	Status      uint8
+	CreatedAt   uint64 `gorm:"autoCreateTime"`
+	UpdatedAt   uint64 `gorm:"autoUpdateTime"`
+}
+
+func GetServiceByFromHost(host string)  {
+
+}
+
+type Service1 struct {
 	Name string
 	Url  string
 }
 
 // GetServiceByName get service information
-func GetServiceByName(serviceName string) *Service {
+func GetServiceByName(serviceName string) *Service1 {
 	rawURL := ""
 	switch serviceName {
 	case "test1":
@@ -23,7 +38,7 @@ func GetServiceByName(serviceName string) *Service {
 		break
 	}
 
-	return &Service{
+	return &Service1{
 		Name: serviceName,
 		Url:  rawURL,
 	}
