@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"github.com/gogf/gf/frame/g"
 	"github.com/spf13/cobra"
 
-	"github.com/bzp2010/webvpn/internal/server"
-	"github.com/bzp2010/webvpn/model"
+	"github.com/bzp2010/webvpn/internal/core"
+	"github.com/bzp2010/webvpn/internal/model"
 )
 
 func init() {
@@ -16,18 +15,17 @@ var migrateCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "migrate database scheme",
 	Run: func(cmd *cobra.Command, args []string) {
-		s, err := server.NewServer(&server.Options{
-			Public: false,
-			Admin:  false,
-		})
+		db, err := core.Database()
 		if err != nil {
-			g.Log().Errorf("webvpn server create failed: %s", err.Error())
+			core.Log().Errorf("database initialize failed: %s", err.Error())
 			return
 		}
 
-		err = s.DB.AutoMigrate(&model.Service{})
+		core.Log().Info("connecting to database")
+
+		err = db.AutoMigrate(&model.Service{})
 		if err != nil {
-			g.Log().Errorf("database migrate failed: %s", err.Error())
+			core.Log().Errorf("database migrate failed: %s", err.Error())
 			return
 		}
 	},
