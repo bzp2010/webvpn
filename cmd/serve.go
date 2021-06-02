@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"github.com/gogf/gf/frame/g"
 	"github.com/spf13/cobra"
 
-	"github.com/bzp2010/webvpn/internal/server"
+	"github.com/bzp2010/webvpn/internal/core"
 )
 
 // root command of run server
@@ -45,19 +44,26 @@ func init() {
 }
 
 func startServer(isStartPublic, isStartAdmin bool)  {
-	s, err := server.NewServer(&server.Options{
+	// initialize database server
+	_, err := core.Database()
+	if err != nil {
+		core.Log().Errorf("database initialize failed: %s", err.Error())
+	}
+
+	// initialize webvpn server
+	s, err := core.Server(&core.Options{
 		Public: isStartPublic,
 		Admin:  isStartAdmin,
 	})
-
 	if err != nil {
-		g.Log().Errorf("webvpn server create failed: %s", err.Error())
+		core.Log().Errorf("webvpn server initialize failed: %s", err.Error())
 		return
 	}
 
+	// start webvpn server
 	err = s.Start()
 	if err != nil {
-		g.Log().Errorf("webvpn server start failed: %s", err.Error())
+		core.Log().Errorf("webvpn server start failed: %s", err.Error())
 		return
 	}
 }

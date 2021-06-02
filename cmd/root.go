@@ -3,9 +3,10 @@ package cmd
 import (
 	"os"
 
-	"github.com/gogf/gf/frame/g"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/bzp2010/webvpn/internal/core"
 )
 
 var configFile string
@@ -17,7 +18,7 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		g.Log().Error(err)
+		core.Log().Error(err)
 		os.Exit(1)
 	}
 }
@@ -36,6 +37,6 @@ func initConfig() {
 
 	// reading config file
 	if err := viper.ReadInConfig(); err != nil {
-		g.Log().Error(err)
+		core.Log().Error(err)
 	}
 }
