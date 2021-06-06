@@ -3,8 +3,9 @@ module github.com/bzp2010/webvpn
 go 1.14
 
 require (
+	github.com/coocood/freecache v1.1.1
 	github.com/go-chi/chi/v5 v5.0.3
-	github.com/go-sql-driver/mysql v1.6.0
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/gogf/gf v1.15.6
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.0

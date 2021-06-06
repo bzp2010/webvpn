@@ -6,7 +6,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/bzp2010/webvpn/internal/core"
+	"github.com/bzp2010/webvpn/internal/handler"
+	"github.com/bzp2010/webvpn/internal/model"
+	"github.com/bzp2010/webvpn/internal/utils"
 )
 
 var configFile string
@@ -18,14 +20,22 @@ var rootCmd = &cobra.Command{
 
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		core.Log().Error(err)
+		utils.Log().Error(err)
 		os.Exit(1)
 	}
 }
 
 func init() {
-	cobra.OnInitialize(initConfig)
+	cobra.OnInitialize(onInitialize)
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "config.yml", "config file")
+}
+
+func onInitialize()  {
+	// load config
+	initConfig()
+
+	// read proxy policy
+	initPolicy()
 }
 
 func initConfig() {
@@ -37,6 +47,24 @@ func initConfig() {
 
 	// reading config file
 	if err := viper.ReadInConfig(); err != nil {
-		core.Log().Error(err)
+		utils.Log().Error(err)
 	}
+
+	// setting debug
+	utils.Log().SetDebug(viper.GetBool("debug"))
+}
+
+func initPolicy()  {
+	var policySlice []*model.Policy
+	err := viper.UnmarshalKey("policy", &policySlice)
+	if err != nil {
+		utils.Log().Error(err)
+		return
+	}
+
+	for _, v := range policySlice {
+		handler.PolicyMap.Set(v.From, v)
+	}
+
+	utils.Log().Debug("policyMap:", handler.PolicyMap)
 }

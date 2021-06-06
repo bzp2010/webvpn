@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"github.com/bzp2010/webvpn/internal/utils"
 )
 
 var database *gorm.DB
@@ -20,7 +22,7 @@ func Database() (*gorm.DB, error) {
 }
 
 func newDatabase() (*gorm.DB, error) {
-	Log().Info("connecting to database")
+	utils.Log().Info("connecting to database")
 
 	dsnURL := viper.GetString("dsn")
 	dsn := strings.Split(dsnURL, "://")
@@ -34,7 +36,7 @@ func newDatabase() (*gorm.DB, error) {
 		return nil, gerror.Newf("connect to database failed: %s", err.Error())
 	}
 
-	Log().Infof("connected to database: dsn=%s://%s", dsn[0], regexp.MustCompile(`(:).*(@)`).ReplaceAllString(dsn[1], ":****@"))
+	utils.Log().Infof("connected to database: dsn=%s://%s", dsn[0], regexp.MustCompile(`(:).*(@)`).ReplaceAllString(dsn[1], ":****@"))
 
 	database = db
 

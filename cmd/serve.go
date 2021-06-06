@@ -1,9 +1,12 @@
 package cmd
 
 import (
+	"sync"
+
 	"github.com/spf13/cobra"
 
 	"github.com/bzp2010/webvpn/internal/core"
+	"github.com/bzp2010/webvpn/internal/utils"
 )
 
 // root command of run server
@@ -44,26 +47,21 @@ func init() {
 }
 
 func startServer(isStartPublic, isStartAdmin bool)  {
-	// initialize database server
-	_, err := core.Database()
-	if err != nil {
-		core.Log().Errorf("database initialize failed: %s", err.Error())
-	}
-
 	// initialize webvpn server
 	s, err := core.Server(&core.Options{
 		Public: isStartPublic,
 		Admin:  isStartAdmin,
 	})
 	if err != nil {
-		core.Log().Errorf("webvpn server initialize failed: %s", err.Error())
+		utils.Log().Errorf("webvpn server initialize failed: %s", err.Error())
 		return
 	}
 
 	// start webvpn server
-	err = s.Start()
-	if err != nil {
-		core.Log().Errorf("webvpn server start failed: %s", err.Error())
-		return
-	}
+	s.Start()
+
+	// create waitgroup
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	wg.Wait()
 }
