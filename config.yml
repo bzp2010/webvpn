@@ -1,9 +1,21 @@
+debug: false
+
 serve:
   admin:
     host: 0.0.0.0
     port: 9119
   public:
     host: 0.0.0.0
-    port: 8118
+    port: 80
 
-dsn: mysql://root:123456@tcp(127.0.0.1:3306)/webvpn
+policy:
+  - from: test.abc123.com
+    to: https://www.baidu.com
+    host_rewrite: www.baidu.com
+
+  - from: test123.abc123.com
+    to: https://www.qq.com
+    host_rewrite: www.qq.com
+
+  - from: test234.abc123.com
+    to: http://127.0.0.1

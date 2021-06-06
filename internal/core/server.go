@@ -4,8 +4,10 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/gogf/gf/errors/gerror"
 	"github.com/spf13/viper"
+
+	"github.com/bzp2010/webvpn/internal/handler"
+	"github.com/bzp2010/webvpn/internal/utils"
 )
 
 type Options struct {
@@ -29,7 +31,7 @@ func Server(o *Options) (*WebVPN, error) {
 }
 
 func newServer(o *Options) (*WebVPN, error) {
-	Log().Infof("create webvpn server: public: %t  admin: %t", o.Public, o.Admin)
+	utils.Log().Infof("create webvpn server: public: %t admin: %t", o.Public, o.Admin)
 
 	// create server
 	s := &WebVPN{options: o}
@@ -49,7 +51,7 @@ func newServer(o *Options) (*WebVPN, error) {
 
 func initPublicServer() *chi.Mux {
 	r := chi.NewRouter()
-	r.Get("/*", Handler)
+	r.Get("/*", handler.ProxyHandler)
 
 	return r
 }
@@ -58,22 +60,28 @@ func initAdminServer() *chi.Mux {
 	return nil
 }
 
-func (s *WebVPN) Start() error {
+func (s *WebVPN) Start() {
 	if s.options.Public {
 		hostAddr := viper.GetString("serve.public.host") + ":" + viper.GetString("serve.public.port")
-		err := http.ListenAndServe(hostAddr, s.publicMux)
-		if err != nil {
-			return gerror.Newf("public server start failed: %s", err.Error())
-		}
+		go func() {
+			err := http.ListenAndServe(hostAddr, s.publicMux)
+			if err != nil {
+				utils.Log().Errorf("webvpn server: public start failed: %s", err.Error())
+				panic("webvpn server: public start failed: " + err.Error())
+			}
+		}()
+		utils.Log().Infof("webvpn server: public run on %s", hostAddr)
 	}
 
 	if s.options.Admin {
 		hostAddr := viper.GetString("serve.admin.host") + ":" + viper.GetString("serve.admin.port")
-		err := http.ListenAndServe(hostAddr, s.adminMux)
-		if err != nil {
-			return gerror.Newf("admin server start failed: %s", err.Error())
-		}
+		go func() {
+			err := http.ListenAndServe(hostAddr, s.adminMux)
+			if err != nil {
+				utils.Log().Errorf("webvpn server: admin start failed: %s", err.Error())
+				panic("webvpn server: admin start failed: " + err.Error())
+			}
+		}()
+		utils.Log().Infof("webvpn server: admin run on %s", hostAddr)
 	}
-
-	return nil
 }
