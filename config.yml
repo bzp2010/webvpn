@@ -9,9 +9,9 @@ serve:
     port: 80
 
 policy:
-  - from: test.abc123.com
-    to: https://www.baidu.com
-    host_rewrite: www.baidu.com
+  #- from: test.abc123.com
+  #  to: https://www.baidu.com
+  #  host_rewrite: www.baidu.com
 
   - from: test123.abc123.com
     to: https://www.qq.com
@@ -19,3 +19,7 @@ policy:
 
   - from: test234.abc123.com
     to: http://127.0.0.1
+
+authentication:
+  service_scheme: http
+  service_url: test.abc123.com
