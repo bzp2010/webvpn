@@ -4,9 +4,12 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	m "github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/hostrouter"
 	"github.com/spf13/viper"
 
 	"github.com/bzp2010/webvpn/internal/handler"
+	"github.com/bzp2010/webvpn/internal/middleware"
 	"github.com/bzp2010/webvpn/internal/utils"
 )
 
@@ -50,10 +53,27 @@ func newServer(o *Options) (*WebVPN, error) {
 }
 
 func initPublicServer() *chi.Mux {
-	r := chi.NewRouter()
-	r.Get("/*", handler.ProxyHandler)
+	rootRouter := chi.NewRouter()
+	authenticationRouter := chi.NewRouter()
+	proxyRouter := chi.NewRouter()
+	hostRouter := hostrouter.New()
 
-	return r
+	// setup middleware
+	authentication := &middleware.Authentication{}
+	proxyRouter.Use(authentication.Authenticate, m.Logger)
+
+	// setup authentication route
+	authenticationRouter.Get("/authentication/login", handler.Login)
+	hostRouter.Map(viper.GetString("authentication.service_url"), authenticationRouter)
+
+	// setup reverse proxy route
+	proxyRouter.Get("/*", handler.ProxyHandler)
+	proxyRouter.Get("/.webvpn/callback", handler.Login)
+	hostRouter.Map("*", proxyRouter)
+
+	rootRouter.Mount("/", hostRouter)
+
+	return rootRouter
 }
 
 func initAdminServer() *chi.Mux {

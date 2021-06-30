@@ -3,6 +3,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
@@ -16,6 +17,9 @@ var rootCmd = &cobra.Command{
 	Use:   "webvpn",
 	Short: "WebVPN is a zero-trust gateway for proxy application",
 	Long:  `A flexible and configurable zero-trust gateway, it provides pluggable authentication and authorization for applications.`,
+	Run: func(cmd *cobra.Command, args []string) {
+		startServer(true, false)
+	},
 }
 
 func Execute() {
@@ -30,7 +34,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", "config.yml", "config file")
 }
 
-func onInitialize()  {
+func onInitialize() {
 	// load config
 	initConfig()
 
@@ -50,11 +54,20 @@ func initConfig() {
 		utils.Log().Error(err)
 	}
 
+	// watch and auto reload config file
+	viper.WatchConfig()
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		if err := viper.ReadInConfig(); err != nil {
+			utils.Log().Error(err)
+		}
+		utils.Log().Debugf("config auto reload: %s", in.Name)
+	})
+
 	// setting debug
 	utils.Log().SetDebug(viper.GetBool("debug"))
 }
 
-func initPolicy()  {
+func initPolicy() {
 	var policySlice []*model.Policy
 	err := viper.UnmarshalKey("policy", &policySlice)
 	if err != nil {
