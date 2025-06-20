@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/go-chi/chi/v5 v5.0.3
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/go-chi/hostrouter v0.2.0
 	github.com/gogf/gf v1.15.6
 	github.com/spf13/cobra v1.1.3
